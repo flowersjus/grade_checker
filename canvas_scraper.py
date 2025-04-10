@@ -11,7 +11,7 @@ load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = "a1b2c3d4e5f6g7h8"  # Replace with a random string (e.g., generate with secrets.token_hex(16))
+app.secret_key = os.getenv("APP_SECRET_KEY")  # Load from .env
 
 # Flask-Login setup
 login_manager = LoginManager()
