@@ -1,30 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grade Checker</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 800px; margin: auto; }
-        .success { color: green; }
-        h3 { margin-top: 20px; }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .header {
+            background-color: #3498db;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .header a {
+            color: #f1c40f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .header a:hover {
+            text-decoration: underline;
+        }
+        .info {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .info p {
+            margin: 0.5rem 0;
+            color: #34495e;
+        }
+        .course {
+            background-color: white;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .course h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+        .course p {
+            margin: 0.5rem 0;
+            color: #34495e;
+        }
+        .course .section-title {
+            font-weight: bold;
+            color: #2980b9;
+            margin-top: 1rem;
+        }
+        .course .success {
+            color: #2ecc71;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Grade Checker</h2>
-        <p><a href="{{ url_for('logout') }}">Logout</a></p>
-        <p>Looking for upcoming assignments between {{ today }} and {{ next_week }} UTC</p>
-        <p>Looking for missing assignments between {{ two_weeks_ago }} and {{ today }} UTC</p>
+        <div class="header">
+            <h2>Grade Checker</h2>
+            <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        </div>
+        <div class="info">
+            <p>Looking for upcoming assignments between {{ today }} and {{ next_week }} UTC</p>
+            <p>Looking for missing assignments between {{ two_weeks_ago }} and {{ today }} UTC</p>
+        </div>
         {% for course in courses %}
-            <h3>{{ course.name }}</h3>
-            <p><strong>Upcoming Assignments (Next 7 Days):</strong></p>
-            {% for upcoming in course.upcoming %}
-                <p>{{ upcoming }}</p>
-            {% endfor %}
-            <p><strong>Missing Assignments (Past Due, Last 2 Weeks):</strong></p>
-            {% for missing in course.missing %}
-                <p>{{ missing }}</p>
-            {% endfor %}
+            <div class="course">
+                <h3>{{ course.name }}</h3>
+                <p class="section-title">Upcoming Assignments (Next 7 Days):</p>
+                {% for upcoming in course.upcoming %}
+                    <p {% if "None coming up" in upcoming %}class="success"{% endif %}>{{ upcoming }}</p>
+                {% endfor %}
+                <p class="section-title">Missing Assignments (Past Due, Last 2 Weeks):</p>
+                {% for missing in course.missing %}
+                    <p {% if "No missing assignments" in missing %}class="success"{% endif %}>{{ missing }}</p>
+                {% endfor %}
+            </div>
         {% endfor %}
     </div>
 </body>
