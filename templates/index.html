@@ -71,6 +71,10 @@
         .course .success {
             color: #2ecc71;
         }
+        .submitted {
+            color: #999; /* Grey text */
+            opacity: 0.7; /* Slightly faded */
+        }
     </style>
 </head>
 <body>
@@ -88,11 +92,11 @@
                 <h3>{{ course.name }}</h3>
                 <p class="section-title">Upcoming Assignments (Next 7 Days):</p>
                 {% for upcoming in course.upcoming %}
-                    <p {% if "None coming up" in upcoming %}class="success"{% endif %}>{{ upcoming }}</p>
+                    <p {% if "None coming up" in upcoming %}class="success"{% elif " (Submitted)" in upcoming %}class="submitted"{% endif %}>{{ upcoming }}</p>
                 {% endfor %}
                 <p class="section-title">Missing Assignments (Past Due, Last 2 Weeks):</p>
                 {% for missing in course.missing %}
-                    <p {% if "No missing assignments" in missing %}class="success"{% endif %}>{{ missing }}</p>
+                    <p {% if "No missing assignments" in missing %}class="success"{% elif " (Submitted)" in missing %}class="submitted"{% endif %}>{{ missing }}</p>
                 {% endfor %}
             </div>
         {% endfor %}

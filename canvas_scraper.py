@@ -86,6 +86,8 @@ def index():
         # Fetch upcoming assignments using ?bucket=upcoming
         has_upcoming = False
         upcoming_url = f"{canvas_url}/api/v1/courses/{course_id}/assignments?bucket=upcoming"
+        upcoming_assignments_data = []
+        
         try:
             upcoming_response = requests.get(upcoming_url, headers=headers)
             upcoming_response.raise_for_status()
@@ -95,7 +97,7 @@ def index():
             upcoming_assignments = []
 
         if not isinstance(upcoming_assignments, list):
-            course_data["upcoming"].append("Something’s funky with the API for upcoming assignments—check your token or course ID!")
+            course_data["upcoming"].append("Something's funky with the API for upcoming assignments—check your token or course ID!")
         else:
             for assignment in upcoming_assignments:
                 due_date = assignment.get("due_at")
@@ -117,16 +119,40 @@ def index():
                     except requests.exceptions.RequestException as e:
                         submitted = False
 
-                    status = " (Submitted)" if submitted else " (Not Submitted)"
-                    course_data["upcoming"].append(f"- {assignment['name']} (Due: {due.strftime('%Y-%m-%d %H:%M')}{status})")
+                    # Store assignment data for sorting
+                    upcoming_assignments_data.append({
+                        "name": assignment['name'],
+                        "due": due,
+                        "submitted": submitted
+                    })
                     has_upcoming = True
-
+            
+            # Sort assignments: first by submission status (unsubmitted first), then by due date
+            if upcoming_assignments_data:
+                # Split into submitted and unsubmitted
+                unsubmitted = [a for a in upcoming_assignments_data if not a["submitted"]]
+                submitted = [a for a in upcoming_assignments_data if a["submitted"]]
+                
+                # Sort each group by due date
+                unsubmitted.sort(key=lambda a: a["due"])
+                submitted.sort(key=lambda a: a["due"])
+                
+                # Combine: unsubmitted first, then submitted
+                sorted_assignments = unsubmitted + submitted
+                
+                # Format assignment strings
+                for assignment in sorted_assignments:
+                    status = " (Submitted)" if assignment["submitted"] else " (Not Submitted)"
+                    course_data["upcoming"].append(f"- {assignment['name']} (Due: {assignment['due'].strftime('%Y-%m-%d %H:%M')}{status})")
+            
             if not has_upcoming:
                 course_data["upcoming"].append("None coming up—smooth sailing ahead!")
 
         # Fetch unsubmitted, past-due assignments using ?bucket=unsubmitted
         has_missing = False
         unsubmitted_url = f"{canvas_url}/api/v1/courses/{course_id}/assignments?bucket=unsubmitted"
+        missing_assignments_data = []
+        
         try:
             unsubmitted_response = requests.get(unsubmitted_url, headers=headers)
             unsubmitted_response.raise_for_status()
@@ -136,7 +162,7 @@ def index():
             unsubmitted_assignments = []
 
         if not isinstance(unsubmitted_assignments, list):
-            course_data["missing"].append("Something’s funky with the API for unsubmitted assignments—check your token or course ID!")
+            course_data["missing"].append("Something's funky with the API for unsubmitted assignments—check your token or course ID!")
         else:
             for assignment in unsubmitted_assignments:
                 due_date = assignment.get("due_at")
@@ -149,9 +175,43 @@ def index():
                     continue
 
                 if two_weeks_ago <= due < today:
-                    course_data["missing"].append(f"- {assignment['name']} (Due: {due.strftime('%Y-%m-%d %H:%M')})")
+                    # For missing assignments, we need to check if they were actually submitted
+                    # (they might be in the unsubmitted bucket but actually submitted late)
+                    sub_url = f"{canvas_url}/api/v1/courses/{course_id}/assignments/{assignment['id']}/submissions/{student_id}"
+                    try:
+                        sub_response = requests.get(sub_url, headers=headers)
+                        sub_response.raise_for_status()
+                        submission = sub_response.json()
+                        submitted = submission.get("submitted_at") is not None
+                    except requests.exceptions.RequestException as e:
+                        submitted = False
+                    
+                    # Store assignment data for sorting
+                    missing_assignments_data.append({
+                        "name": assignment['name'],
+                        "due": due,
+                        "submitted": submitted
+                    })
                     has_missing = True
-
+            
+            # Sort assignments: first by submission status (unsubmitted first), then by due date
+            if missing_assignments_data:
+                # Split into submitted and unsubmitted
+                unsubmitted = [a for a in missing_assignments_data if not a["submitted"]]
+                submitted = [a for a in missing_assignments_data if a["submitted"]]
+                
+                # Sort each group by due date
+                unsubmitted.sort(key=lambda a: a["due"])
+                submitted.sort(key=lambda a: a["due"])
+                
+                # Combine: unsubmitted first, then submitted
+                sorted_assignments = unsubmitted + submitted
+                
+                # Format assignment strings
+                for assignment in sorted_assignments:
+                    status = " (Submitted)" if assignment["submitted"] else ""
+                    course_data["missing"].append(f"- {assignment['name']} (Due: {assignment['due'].strftime('%Y-%m-%d %H:%M')}{status})")
+            
             if not has_missing:
                 course_data["missing"].append("No missing assignments in the last 2 weeks!(sigh of relief)")
 
