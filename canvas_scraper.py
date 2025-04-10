@@ -11,7 +11,7 @@ load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = "598c1eacdb02af2ae4483efb8894cfe4"  # Replace with a random string (e.g., generate with secrets.token_hex(16))
+app.secret_key = "a1b2c3d4e5f6g7h8"  # Replace with a random string (e.g., generate with secrets.token_hex(16))
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -160,4 +160,6 @@ def index():
     return render_template("index.html", courses=courses, today=today.strftime('%Y-%m-%d %H:%M'), next_week=next_week.strftime('%Y-%m-%d %H:%M'), two_weeks_ago=two_weeks_ago.strftime('%Y-%m-%d %H:%M'))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Bind to 0.0.0.0 and use the PORT environment variable (default to 5000 for local testing)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
