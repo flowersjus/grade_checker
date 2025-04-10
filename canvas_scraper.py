@@ -11,7 +11,7 @@ load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = "supersecretkey123"  # Change this to a random string for production
+app.secret_key = "598c1eacdb02af2ae4483efb8894cfe4"  # Replace with a random string (e.g., generate with secrets.token_hex(16))
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -24,11 +24,8 @@ class User(UserMixin):
         self.id = username
         self.username = username
 
-# Hardcoded users (you and her mama)
-users = {
-    "justin": "password123",  # Change these to secure passwords
-    "mama": "password456"
-}
+# Load users from .env
+users = json.loads(os.getenv("USERS"))
 
 @login_manager.user_loader
 def load_user(username):
