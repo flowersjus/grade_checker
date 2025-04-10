@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grade Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: auto; }
+        .success { color: green; }
+        h3 { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Grade Checker</h2>
+        <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        <p>Looking for upcoming assignments between {{ today }} and {{ next_week }} UTC</p>
+        <p>Looking for missing assignments between {{ two_weeks_ago }} and {{ today }} UTC</p>
+        {% for course in courses %}
+            <h3>{{ course.name }}</h3>
+            <p><strong>Upcoming Assignments (Next 7 Days):</strong></p>
+            {% for upcoming in course.upcoming %}
+                <p>{{ upcoming }}</p>
+            {% endfor %}
+            <p><strong>Missing Assignments (Past Due, Last 2 Weeks):</strong></p>
+            {% for missing in course.missing %}
+                <p>{{ missing }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</body>
+</html>
